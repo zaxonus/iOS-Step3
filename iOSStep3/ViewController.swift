@@ -289,7 +289,7 @@ class ViewController: UIViewController {
     }
     
     
-    func initSquare() {
+    func initSquare(_ colorIniFlag: Bool) {
         view.removeConstraint(ctrSqWidCons)
         ctrSqWidCons = centerSquareWidthConstraint(centerSquareSizeFactor)
         view.addConstraint(ctrSqWidCons)
@@ -298,6 +298,17 @@ class ViewController: UIViewController {
         view.addConstraint(cornerSqWidCons)
         highSider.value = 0.0
         lowSider.value = 0.0
+        
+        if !colorIniFlag {
+            centerSquare.backgroundColor = UIColor.black
+            return
+        }
+        
+        topLeftSquare.backgroundColor = UIColor.red
+        topRightSquare.backgroundColor = UIColor.green
+        botmLeftSquare.backgroundColor = UIColor.yellow
+        botmRightSquare.backgroundColor = UIColor.blue
+
     }
     
     
@@ -308,12 +319,12 @@ class ViewController: UIViewController {
         case 0:
             currentMode = .modeOne
             neededComponents = [centerSquare, highSider, lowSider]
-            initSquare()
+            initSquare(false)
         case 1:
             currentMode = .modeTwo
             neededComponents = [topLeftSquare, topRightSquare, botmLeftSquare, botmRightSquare,
                                 highSider, lowSider]
-            initSquare()
+            initSquare(true)
        case 2:
             currentMode = .modeThree
             neededComponents = [swipeSquare]
@@ -348,13 +359,23 @@ class ViewController: UIViewController {
                 view.addConstraint(ctrSqWidCons)
             }
         case .modeTwo:
-            
-            if sender == highSider {
-//                let greyLevel = CGFloat(sender.value)
-//                centerSquare.backgroundColor = UIColor(red: greyLevel,
-//                                                       green: greyLevel,
-//                                                       blue: greyLevel,
-//                                                       alpha: 1.0)
+             if sender == highSider {
+                topLeftSquare.backgroundColor = UIColor(red: CGFloat(1.0 - sender.value),
+                                                        green: CGFloat(sender.value),
+                                                        blue: 0.0,
+                                                        alpha: 1.0)
+                topRightSquare.backgroundColor = UIColor(red: 0.0,
+                                                         green: CGFloat(1.0 - sender.value),
+                                                         blue: CGFloat(sender.value),
+                                                         alpha: 1.0)
+                botmRightSquare.backgroundColor = UIColor(red: CGFloat(sender.value),
+                                                          green: CGFloat(sender.value),
+                                                          blue: CGFloat(1.0 - sender.value),
+                                                          alpha: 1.0)
+                botmLeftSquare.backgroundColor = UIColor(red: 1.0,
+                                                         green: CGFloat(1.0 - sender.value),
+                                                         blue: 0.0,
+                                                         alpha: 1.0)
             } else /*(sender == lowSider)*/ {
                 view.removeConstraint(cornerSqWidCons)
                 let tempVal = cornerSquareSizeFactor - 0.1,
@@ -362,9 +383,6 @@ class ViewController: UIViewController {
                 cornerSqWidCons = cornerSquareWidthConstraint(newConsMultCoef)
                 view.addConstraint(cornerSqWidCons)
             }
-
-            
-            break
         case .modeThree: fallthrough
         default:
             break
