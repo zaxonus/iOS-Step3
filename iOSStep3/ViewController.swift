@@ -19,7 +19,7 @@ class ViewController: UIViewController {
     topLeftSquare = UIView(), topRightSquare = UIView(),
     botmLeftSquare = UIView(), botmRightSquare = UIView(),
     swipeSquare = UIView()
-    var modeChoice:UISegmentedControl!,
+    var modeChoice:UISegmentedControl!, ctrSqWidCons:NSLayoutConstraint!,
     allComponents:[UIView]!, currentMode:appMode!,
     leftSwipe,rightSwipe,upSwipe,downSwipe:UISwipeGestureRecognizer!
 
@@ -50,7 +50,17 @@ class ViewController: UIViewController {
         
         // Let us initialize centerSquare.
         centerSquare.backgroundColor = UIColor.black
+        
+        // Let us customize and initialize highSider and lowSider.
+        // The default minimum and maximum values are respectively 0.0 ad 1.0.
+        highSider.tintColor = UIColor.darkGray
+        lowSider.tintColor = UIColor.darkGray
+        
+        for slider in [highSider, lowSider] {
+            slider.addTarget(self, action: #selector(slideHandler(_:)), for: .valueChanged)
+        }
 
+        // Let us set up the Swipe Gesture Recognizers.
         leftSwipe = UISwipeGestureRecognizer(target: self, action: #selector(swipeHandler(_:)))
         rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(swipeHandler(_:)))
         upSwipe = UISwipeGestureRecognizer(target: self, action: #selector(swipeHandler(_:)))
@@ -64,8 +74,19 @@ class ViewController: UIViewController {
             swipeSquare.addGestureRecognizer(gestureRecz!)
         }
 
-        setComponentsLayOut()
+        setComponentsLayOut() // Lay out all the components.
         choiceSwitcher() // This is a convenient way to make sure everything is in place.
+    }
+    
+    
+    func centerSquareWidthConstraint(_ multiplyCoef: CGFloat) -> NSLayoutConstraint {
+        return NSLayoutConstraint(item: centerSquare,
+                                  attribute: .width,
+                                  relatedBy: .equal,
+                                  toItem: view,
+                                  attribute: .width,
+                                  multiplier: multiplyCoef,
+                                  constant: 0.0)
     }
 
 
@@ -80,8 +101,8 @@ class ViewController: UIViewController {
                                                   constant: 0.0))
         }
         
-        for component in [highSider, lowSider] {
-            view.addConstraint(NSLayoutConstraint(item: component,
+        for slider in [highSider, lowSider] {
+            view.addConstraint(NSLayoutConstraint(item: slider,
                                                   attribute: .width,
                                                   relatedBy: .equal,
                                                   toItem: view,
@@ -89,6 +110,14 @@ class ViewController: UIViewController {
                                                   multiplier: 0.8,
                                                   constant: 0.0))
         }
+        
+        let topSpacer = UIView(), botmSpacer = UIView()
+        for spacer in [topSpacer, botmSpacer] {
+            spacer.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(spacer)
+        }
+
+        ctrSqWidCons = centerSquareWidthConstraint(0.8)
         
         view.addConstraints([
             NSLayoutConstraint(item: modeChoice,
@@ -112,25 +141,47 @@ class ViewController: UIViewController {
                                attribute: .top,
                                multiplier: 1.0,
                                constant: -30.0),
-            NSLayoutConstraint(item: centerSquare,
-                               attribute: .width,
-                               relatedBy: .equal,
-                               toItem: view,
-                               attribute: .width,
-                               multiplier: 0.8,
-                               constant: 0.0),
-            NSLayoutConstraint(item: centerSquare,
-                               attribute: .centerY,
-                               relatedBy: .equal,
-                               toItem: view,
-                               attribute: .centerY,
-                               multiplier: 1.0,
-                               constant: 0.0),
+            ctrSqWidCons,
             NSLayoutConstraint(item: centerSquare,
                                attribute: .height,
                                relatedBy: .equal,
                                toItem: centerSquare,
                                attribute: .width,
+                               multiplier: 1.0,
+                               constant: 0.0),
+            NSLayoutConstraint(item: topSpacer,
+                               attribute: .top,
+                               relatedBy: .equal,
+                               toItem: modeChoice,
+                               attribute: .bottom,
+                               multiplier: 1.0,
+                               constant: 0.0),
+            NSLayoutConstraint(item: topSpacer,
+                               attribute: .bottom,
+                               relatedBy: .equal,
+                               toItem: centerSquare,
+                               attribute: .top,
+                               multiplier: 1.0,
+                               constant: 0.0),
+            NSLayoutConstraint(item: botmSpacer,
+                               attribute: .top,
+                               relatedBy: .equal,
+                               toItem: centerSquare,
+                               attribute: .bottom,
+                               multiplier: 1.0,
+                               constant: 0.0),
+            NSLayoutConstraint(item: botmSpacer,
+                               attribute: .bottom,
+                               relatedBy: .equal,
+                               toItem: highSider,
+                               attribute: .top,
+                               multiplier: 1.0,
+                               constant: 0.0),
+            NSLayoutConstraint(item: topSpacer,
+                               attribute: .height,
+                               relatedBy: .equal,
+                               toItem: botmSpacer,
+                               attribute: .height,
                                multiplier: 1.0,
                                constant: 0.0),
             NSLayoutConstraint(item: swipeSquare,
@@ -184,7 +235,32 @@ class ViewController: UIViewController {
             else {component.isHidden = true}
         }
     }
-        
+    
+    
+    @objc func slideHandler(_ sender: UISlider) {
+        switch currentMode {
+        case .modeOne:
+            if sender == highSider {
+                let greyLevel = CGFloat(sender.value)
+                centerSquare.backgroundColor = UIColor(red: greyLevel,
+                                                       green: greyLevel,
+                                                       blue: greyLevel,
+                                                       alpha: 1.0)
+            } else /*(sender == lowSider)*/ {
+                view.removeConstraint(ctrSqWidCons)
+                let newConsMultCoef = CGFloat(0.1 + (1.0 - sender.value) * 0.7)
+                ctrSqWidCons = centerSquareWidthConstraint(newConsMultCoef)
+                view.addConstraint(ctrSqWidCons)
+            }
+        case .modeTwo:
+            break
+        case .modeThree: fallthrough
+        default:
+            break
+        }
+    }
+    
+    
     @objc func swipeHandler(_ sender: UISwipeGestureRecognizer) {
         print(#function)
         switch sender {
