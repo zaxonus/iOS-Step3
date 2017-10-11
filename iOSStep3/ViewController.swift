@@ -14,12 +14,13 @@ class ViewController: UIViewController {
         case modeTwo
         case modeThree
     }
-    let centerSquare = UIView(),
+    let centerSquare = UIView(), centerSquareSizeFactor:CGFloat = 0.9,
     highSider = UISlider(), lowSider = UISlider(),
     topLeftSquare = UIView(), topRightSquare = UIView(),
     botmLeftSquare = UIView(), botmRightSquare = UIView(),
+    cornerSquareSizeFactor:CGFloat = 0.46,
     swipeSquare = UIView()
-    var modeChoice:UISegmentedControl!, ctrSqWidCons:NSLayoutConstraint!,
+    var modeChoice:UISegmentedControl!, ctrSqWidCons,cornerSqWidCons:NSLayoutConstraint!,
     allComponents:[UIView]!, currentMode:appMode!,
     leftSwipe,rightSwipe,upSwipe,downSwipe:UISwipeGestureRecognizer!
 
@@ -51,6 +52,12 @@ class ViewController: UIViewController {
         // Let us initialize centerSquare.
         centerSquare.backgroundColor = UIColor.black
         
+        // Let us initialize the corner squares (topLeftSquare,topRightSquare,botmLeftSquare,botmRightSquare).
+        topLeftSquare.backgroundColor = UIColor.red
+        topRightSquare.backgroundColor = UIColor.green
+        botmLeftSquare.backgroundColor = UIColor.yellow
+        botmRightSquare.backgroundColor = UIColor.blue
+
         // Let us customize and initialize highSider and lowSider.
         // The default minimum and maximum values are respectively 0.0 ad 1.0.
         highSider.tintColor = UIColor.darkGray
@@ -90,6 +97,17 @@ class ViewController: UIViewController {
     }
 
 
+    func cornerSquareWidthConstraint(_ multiplyCoef: CGFloat) -> NSLayoutConstraint {
+        return NSLayoutConstraint(item: topLeftSquare,
+                                  attribute: .width,
+                                  relatedBy: .equal,
+                                  toItem: centerSquare,
+                                  attribute: .width,
+                                  multiplier: multiplyCoef,
+                                  constant: 0.0)
+    }
+    
+    
     func setComponentsLayOut() {
         for component in [modeChoice, highSider, lowSider, centerSquare, swipeSquare] {
             view.addConstraint(NSLayoutConstraint(item: component,
@@ -117,7 +135,7 @@ class ViewController: UIViewController {
             view.addSubview(spacer)
         }
 
-        ctrSqWidCons = centerSquareWidthConstraint(0.8)
+        ctrSqWidCons = centerSquareWidthConstraint(centerSquareSizeFactor)
         
         view.addConstraints([
             NSLayoutConstraint(item: modeChoice,
@@ -204,8 +222,82 @@ class ViewController: UIViewController {
                                toItem: view,
                                attribute: .bottom,
                                multiplier: 1.0,
-                               constant: 0.0)
-          ])
+                               constant: 0.0)])
+        
+        for component in [topLeftSquare, topRightSquare] {
+            view.addConstraint(NSLayoutConstraint(item: component,
+                                                  attribute: .top,
+                                                  relatedBy: .equal,
+                                                  toItem: centerSquare,
+                                                  attribute: .top,
+                                                  multiplier: 1.0,
+                                                  constant: 0.0))
+        }
+ 
+        for component in [botmLeftSquare, botmRightSquare] {
+            view.addConstraint(NSLayoutConstraint(item: component,
+                                                  attribute: .bottom,
+                                                  relatedBy: .equal,
+                                                  toItem: centerSquare,
+                                                  attribute: .bottom,
+                                                  multiplier: 1.0,
+                                                  constant: 0.0))
+        }
+        
+        for component in [topLeftSquare, botmLeftSquare] {
+            view.addConstraint(NSLayoutConstraint(item: component,
+                                                  attribute: .left,
+                                                  relatedBy: .equal,
+                                                  toItem: centerSquare,
+                                                  attribute: .left,
+                                                  multiplier: 1.0,
+                                                  constant: 0.0))
+        }
+
+        for component in [topRightSquare, botmRightSquare] {
+            view.addConstraint(NSLayoutConstraint(item: component,
+                                                  attribute: .right,
+                                                  relatedBy: .equal,
+                                                  toItem: centerSquare,
+                                                  attribute: .right,
+                                                  multiplier: 1.0,
+                                                  constant: 0.0))
+        }
+        
+        cornerSqWidCons = cornerSquareWidthConstraint(cornerSquareSizeFactor)
+        view.addConstraint(cornerSqWidCons)
+
+        for component in [topRightSquare, botmLeftSquare, botmRightSquare] {
+            view.addConstraint(NSLayoutConstraint(item: component,
+                                                  attribute: .width,
+                                                  relatedBy: .equal,
+                                                  toItem: topLeftSquare,
+                                                  attribute: .width,
+                                                  multiplier: 1.0,
+                                                  constant: 0.0))
+        }
+        
+        for component in [topLeftSquare, topRightSquare, botmLeftSquare, botmRightSquare] {
+            view.addConstraint(NSLayoutConstraint(item: component,
+                                                  attribute: .height,
+                                                  relatedBy: .equal,
+                                                  toItem: component,
+                                                  attribute: .width,
+                                                  multiplier: 1.0,
+                                                  constant: 0.0))
+        }
+    }
+    
+    
+    func initSquare() {
+        view.removeConstraint(ctrSqWidCons)
+        ctrSqWidCons = centerSquareWidthConstraint(centerSquareSizeFactor)
+        view.addConstraint(ctrSqWidCons)
+        view.removeConstraint(cornerSqWidCons)
+        cornerSqWidCons = cornerSquareWidthConstraint(cornerSquareSizeFactor)
+        view.addConstraint(cornerSqWidCons)
+        highSider.value = 0.0
+        lowSider.value = 0.0
     }
     
     
@@ -216,10 +308,12 @@ class ViewController: UIViewController {
         case 0:
             currentMode = .modeOne
             neededComponents = [centerSquare, highSider, lowSider]
+            initSquare()
         case 1:
             currentMode = .modeTwo
             neededComponents = [topLeftSquare, topRightSquare, botmLeftSquare, botmRightSquare,
                                 highSider, lowSider]
+            initSquare()
        case 2:
             currentMode = .modeThree
             neededComponents = [swipeSquare]
@@ -248,11 +342,28 @@ class ViewController: UIViewController {
                                                        alpha: 1.0)
             } else /*(sender == lowSider)*/ {
                 view.removeConstraint(ctrSqWidCons)
-                let newConsMultCoef = CGFloat(0.1 + (1.0 - sender.value) * 0.7)
+                let tempVal = centerSquareSizeFactor - 0.1,
+                newConsMultCoef = CGFloat(0.1 + CGFloat(1.0 - sender.value) * tempVal)
                 ctrSqWidCons = centerSquareWidthConstraint(newConsMultCoef)
                 view.addConstraint(ctrSqWidCons)
             }
         case .modeTwo:
+            
+            if sender == highSider {
+//                let greyLevel = CGFloat(sender.value)
+//                centerSquare.backgroundColor = UIColor(red: greyLevel,
+//                                                       green: greyLevel,
+//                                                       blue: greyLevel,
+//                                                       alpha: 1.0)
+            } else /*(sender == lowSider)*/ {
+                view.removeConstraint(cornerSqWidCons)
+                let tempVal = cornerSquareSizeFactor - 0.1,
+                newConsMultCoef = CGFloat(0.1 + CGFloat(1.0 - sender.value) * tempVal)
+                cornerSqWidCons = cornerSquareWidthConstraint(newConsMultCoef)
+                view.addConstraint(cornerSqWidCons)
+            }
+
+            
             break
         case .modeThree: fallthrough
         default:
