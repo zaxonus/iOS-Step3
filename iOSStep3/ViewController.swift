@@ -14,6 +14,12 @@ class ViewController: UIViewController {
         case modeTwo
         case modeThree
     }
+    
+    /* We create all the components here. Six of type UIView, two of type UISlider
+     and one of type UISegmentedControl. Strictly speaking we only declare the
+     UISegmentedControl component and we create it later inside viewDidLoad().
+     Beside we also declare a few other (somewhat more abstract) components:
+     two of type NSLayoutConstraint and four of type UISwipeGestureRecognizer. */
     let centerSquare = UIView(), centerSquareSizeFactor:CGFloat = 0.9,
     highSider = UISlider(), lowSider = UISlider(),
     topLeftSquare = UIView(), topRightSquare = UIView(),
@@ -109,6 +115,8 @@ class ViewController: UIViewController {
     
     
     func setComponentsLayOut() {
+        // This function lays out all the components on the display the way we want them to appear.
+        
         for component in [modeChoice, highSider, lowSider, centerSquare, swipeSquare] {
             view.addConstraint(NSLayoutConstraint(item: component,
                                                   attribute: .centerX,
@@ -290,6 +298,7 @@ class ViewController: UIViewController {
     
     
     func initSquare(_ colorIniFlag: Bool) {
+        // This function resets all the squares sliders to their initial state.
         view.removeConstraint(ctrSqWidCons)
         ctrSqWidCons = centerSquareWidthConstraint(centerSquareSizeFactor)
         view.addConstraint(ctrSqWidCons)
@@ -308,11 +317,11 @@ class ViewController: UIViewController {
         topRightSquare.backgroundColor = UIColor.green
         botmLeftSquare.backgroundColor = UIColor.yellow
         botmRightSquare.backgroundColor = UIColor.blue
-
     }
     
     
     @objc func choiceSwitcher() {
+        // This function controls the choice of the app mode (One, Two or Three).
         let neededComponents:[UIView]
         
         switch modeChoice.selectedSegmentIndex {
@@ -343,6 +352,7 @@ class ViewController: UIViewController {
     
     
     @objc func slideHandler(_ sender: UISlider) {
+        // This function controls what happens when a component of type UISlider is used.
         switch currentMode {
         case .modeOne:
             if sender == highSider {
@@ -391,7 +401,7 @@ class ViewController: UIViewController {
     
     
     @objc func swipeHandler(_ sender: UISwipeGestureRecognizer) {
-        print(#function)
+        // This function controls what happens when a swipe is made.
         switch sender {
         case leftSwipe:
             swipeSquare.backgroundColor = UIColor.green
